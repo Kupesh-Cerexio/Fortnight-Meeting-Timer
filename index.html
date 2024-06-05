@@ -30,6 +30,12 @@
             margin: 1rem 0;
         }
 
+        .buttons {
+            display: flex;
+            flex-direction: column; /* Display buttons vertically */
+            align-items: center; /* Center buttons horizontally */
+        }
+
         .buttons button {
             margin: 0.5rem;
             padding: 0.5rem 1rem;
@@ -55,6 +61,10 @@
             color: white;
         }
 
+        #mute {
+            background-color: #e0e0e0;
+        }
+
         /* Media query for larger screens */
         @media (min-width: 600px) {
             #timer {
@@ -77,28 +87,31 @@
             <button id="start">Start</button>
             <button id="stop">Stop</button>
             <button id="reset">Reset</button>
+            <button id="mute">Mute</button>
         </div>
     </div>
-    <!-- Use the tik.mp3 and buz.mp3 files located in the "inside" folder -->
-    <audio id="tick" src="inside/tick.mp3" preload="auto"></audio>
+    <!-- Use the tick.mp3 and buz.mp3 files located in the "inside" folder -->
+    <audio id="tick" src="inside/tick.mp3" preload="auto" loop></audio>
     <audio id="buzzer" src="inside/buzzer.mp3" preload="auto"></audio>
     <script>
         let timeLeft = 240; // 4 minutes in seconds
         let timerInterval;
         const timerElement = document.getElementById('timer');
-        const buzzer = document.getElementById('buzzer'); // Corrected
-        const tick = document.getElementById('tick'); // Corrected
+        const buzzer = document.getElementById('buzzer');
+        const tick = document.getElementById('tick');
         const speechSynthesis = window.speechSynthesis;
+        let tickMuted = false;
 
         document.getElementById('start').addEventListener('click', startTimer);
         document.getElementById('stop').addEventListener('click', stopTimer);
         document.getElementById('reset').addEventListener('click', resetTimer);
+        document.getElementById('mute').addEventListener('click', toggleTickMute);
 
         // Add event listener to play tick sound when the page is interacted with
         document.addEventListener('click', () => {
-            tick.play();
-            tick.pause();
-            tick.currentTime = 0;
+            if (!tickMuted) {
+                tick.play();
+            }
         });
 
         function startTimer() {
@@ -111,11 +124,13 @@
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     speak("Time up!");
-                    buzzer.play(); // Corrected
+                    buzzer.play(); // Play buzzer sound only once
                     return;
                 } else {
                     updateTimerDisplay();
-                    tick.play();
+                    if (!tickMuted) {
+                        tick.play();
+                    }
                     if (timeLeft === 120) {
                         speak("2 minutes more");
                     } else if (timeLeft === 60) {
@@ -153,6 +168,15 @@
             let id = window.setTimeout(null, 0);
             while (id--) {
                 window.clearTimeout(id);
+            }
+        }
+
+        function toggleTickMute() {
+            tickMuted = !tickMuted;
+            if (tickMuted) {
+                tick.pause();
+            } else {
+                tick.play();
             }
         }
     </script>
