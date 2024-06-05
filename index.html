@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortnight Meeting Timer</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        #timer {
+            font-size: 3rem;
+            margin: 1rem 0;
+        }
+
+        .buttons button {
+            margin: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 80px;
+        }
+
+        #start {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #stop {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #reset {
+            background-color: #008CBA;
+            color: white;
+        }
+
+        /* Media query for larger screens */
+        @media (min-width: 600px) {
+            #timer {
+                font-size: 4rem;
+            }
+
+            .buttons button {
+                padding: 0.5rem 1.5rem;
+                font-size: 1.2rem;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Fortnight Meeting Timer</h1>
+        <div id="timer">04:00</div>
+        <div class="buttons">
+            <button id="start">Start</button>
+            <button id="stop">Stop</button>
+            <button id="reset">Reset</button>
+        </div>
+    </div>
+    <!-- Use the tik.mp3 and buz.mp3 files located in the "inside" folder -->
+    <audio id="tick" src="inside/tick.mp3" preload="auto"></audio>
+    <audio id="buzzer" src="inside/buzzer.mp3" preload="auto"></audio>
+    <script>
+        let timeLeft = 240; // 4 minutes in seconds
+        let timerInterval;
+        const timerElement = document.getElementById('timer');
+        const buzzer = document.getElementById('buzzer'); // Corrected
+        const tick = document.getElementById('tick'); // Corrected
+        const speechSynthesis = window.speechSynthesis;
+
+        document.getElementById('start').addEventListener('click', startTimer);
+        document.getElementById('stop').addEventListener('click', stopTimer);
+        document.getElementById('reset').addEventListener('click', resetTimer);
+
+        // Add event listener to play tick sound when the page is interacted with
+        document.addEventListener('click', () => {
+            tick.play();
+            tick.pause();
+            tick.currentTime = 0;
+        });
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            clearTimeouts();
+            timeLeft = 240; // Reset to 4 minutes
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    speak("Time up!");
+                    buzzer.play(); // Corrected
+                    return;
+                } else {
+                    updateTimerDisplay();
+                    tick.play();
+                    if (timeLeft === 120) {
+                        speak("2 minutes more");
+                    } else if (timeLeft === 60) {
+                        speak("1 minute more");
+                    }
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            clearTimeouts();
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            clearTimeouts();
+            timeLeft = 240;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        function clearTimeouts() {
+            let id = window.setTimeout(null, 0);
+            while (id--) {
+                window.clearTimeout(id);
+            }
+        }
+    </script>
+</body>
+</html>
